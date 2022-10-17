@@ -18,6 +18,8 @@ namespace Combinador_de_datos_Brose
         string pathExcel = "";
         DateTime FechaInicio = DateTime.Today;
         DateTime FechaFinal = DateTime.Today;
+        string[] folders;
+        List<DateTime> fechas = new List<DateTime>();
 
         public Form1()
         {
@@ -45,56 +47,61 @@ namespace Combinador_de_datos_Brose
             FechaFinal = dateTimePickerFechaFinal.Value;
         }
 
-        private void buttonFolder_Click(object sender, EventArgs e)
-        {
-            path = textBoxPathFiles.Text;
-            string pathFile;
-            string pathFileRename;
-            if (textBoxPathFiles.Text == "")
-                MessageBox.Show("No ha seleccionado ninguna ruta", "Seleccione una ruta", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            else
-            {
-                try
-                {
-                    textBoxConsole.AppendText("Proceso de renombre de carpetas");
-                    textBoxConsole.AppendText(Environment.NewLine);
-                    while (true)
-                    {
-                        if (FechaInicio > FechaFinal)
-                            break;
-                        // Se empiezan a leer las carpetas para realizar el cambio de nombre
-                        pathFile = path + "\\" + FechaInicio.ToString("dd-MMM-yy");
-                        pathFileRename = path + "\\" + FechaInicio.ToString("MM-dd-yy");
-                        try
-                        {
-                            Directory.Move(pathFile, pathFileRename);
-                            textBoxConsole.AppendText(pathFileRename);
-                            textBoxConsole.AppendText(Environment.NewLine);
-                            textBoxConsole.AppendText("Hecho");
-                            textBoxConsole.AppendText(Environment.NewLine);
-                            FechaInicio = FechaInicio.AddDays(1);
-                        }
-                        catch (Exception DateNotFound)
-                        {
-                            if (DateNotFound is DirectoryNotFoundException) // Si no encuentra la carpeta, sigue
-                            {
-                                FechaInicio = FechaInicio.AddDays(1);
-                                continue;   
-                            }
-                        }
-                    }
-                    textBoxConsole.AppendText("Proceso terminado");
-                    textBoxConsole.AppendText(Environment.NewLine);
-                    MessageBox.Show("Las carpetas se han renombreado", "Proceso completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                FechaInicio = dateTimePickerFechaInicial.Value;
-                FechaFinal = dateTimePickerFechaFinal.Value;
-            }
-        }
+        //private void buttonFolder_Click(object sender, EventArgs e)
+        //{
+        //    path = textBoxPathFiles.Text;
+        //    progressBar1.Value = 0;
+        //    string pathFile;
+        //    string pathFileRename;
+        //    int contador = 0;
+        //    if (textBoxPathFiles.Text == "")
+        //        MessageBox.Show("No ha seleccionado ninguna ruta", "Seleccione una ruta", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        //    else
+        //    {
+        //        try
+        //        {
+        //            textBoxConsole.AppendText("Proceso de renombre de carpetas");
+        //            textBoxConsole.AppendText(Environment.NewLine);
+        //            while (true)
+        //            {
+        //                if (FechaInicio > FechaFinal)
+        //                    break;
+        //                // Se empiezan a leer las carpetas para realizar el cambio de nombre
+        //                pathFile = path + "\\" + FechaInicio.ToString("dd-MMM-yy");
+        //                pathFileRename = path + "\\" + FechaInicio.ToString("MM-dd-yy");
+        //                try
+        //                {
+        //                    Directory.Move(pathFile, pathFileRename);
+        //                    textBoxConsole.AppendText(pathFileRename);
+        //                    textBoxConsole.AppendText(Environment.NewLine);
+        //                    textBoxConsole.AppendText("Hecho");
+        //                    textBoxConsole.AppendText(Environment.NewLine);
+        //                    FechaInicio = FechaInicio.AddDays(1);
+        //                    contador += 1;
+        //                    progressBar1.Value = contador;
+        //                }
+        //                catch (Exception DateNotFound)
+        //                {
+        //                    if (DateNotFound is DirectoryNotFoundException) // Si no encuentra la carpeta, sigue
+        //                    {
+        //                        FechaInicio = FechaInicio.AddDays(1);
+        //                        continue;   
+        //                    }
+        //                }
+        //            }
+        //            textBoxConsole.AppendText("Proceso terminado");
+        //            textBoxConsole.AppendText(Environment.NewLine);
+        //            MessageBox.Show("Las carpetas se han renombreado", "Proceso completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            MessageBox.Show(ex.Message.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //        }
+        //        FechaInicio = dateTimePickerFechaInicial.Value;
+        //        FechaFinal = dateTimePickerFechaFinal.Value;
+        //    }
+        //}
+
         private void buttonSaveExcel_Click(object sender, EventArgs e)
         {
             // Donde se guardara el archivo de excel
@@ -110,6 +117,8 @@ namespace Combinador_de_datos_Brose
         private void buttonCombinarDatos_Click(object sender, EventArgs e)
         {
             pathExcel = textBoxPathExcel.Text;
+            int contador = 0;
+            progressBar1.Value = 0;
             string pathExcelFormat = pathExcel + ".xlsx";
             string PathCSV = AppDomain.CurrentDomain.BaseDirectory + "\\Template\\Datos.csv";
             string PathCSVCopy = AppDomain.CurrentDomain.BaseDirectory + "\\Template\\DatosCopy.csv";
@@ -118,8 +127,8 @@ namespace Combinador_de_datos_Brose
             StreamWriter Writer;
             string array;
             string contenidodelimitado;
-            if (textBoxPathExcel.Text == "")
-                MessageBox.Show("No ha seleccionado ninguna ruta", "Seleccione una ruta", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (textBoxPathExcel.Text == "" && textBoxNombreArchivo.Text == "")
+                MessageBox.Show("Escriba el nombre del archivo y/o la ruta donde se guardara", "Campos no introducidos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
             {
                 try
@@ -146,7 +155,8 @@ namespace Combinador_de_datos_Brose
                         try
                         {
                             // Lectura de cada archivo
-                            FileAdd = path + "\\" + FechaInicio.ToString("MM-dd-yy") + @"\Ford P552 HVAC.dat"; // Ejemplo: 02-01-22\Ford P552 HVAC.dat
+                            string Nombre_archivo = textBoxNombreArchivo.Text;
+                            FileAdd = path + "\\" + FechaInicio.ToString("dd-MMM-yy") + @"\" + Nombre_archivo; // Ejemplo: 02-01-22\Ford P552 HVAC.dat
                             Reader = File.OpenText(FileAdd);
                             array = Reader.ReadLine();
                             while (array != null)
@@ -163,6 +173,8 @@ namespace Combinador_de_datos_Brose
                             textBoxConsole.AppendText(FileAdd + " Add");
                             textBoxConsole.AppendText(Environment.NewLine);
                             FechaInicio = FechaInicio.AddDays(1);
+                            contador += 1;
+                            progressBar1.Value = contador;
                         }
                         catch (Exception DateNotFound)
                         {
@@ -227,5 +239,47 @@ namespace Combinador_de_datos_Brose
             //Quit Excel Application.
             xl.Quit();
         }
+
+        private void buttonHelp_Click(object sender, EventArgs e)
+        {
+            Form2 form = new Form2();
+            form.Show();
+        }
+
+        private void buttonActFechas_Click(object sender, EventArgs e)
+        {
+            path = textBoxPathFiles.Text;
+            if (textBoxPathFiles.Text == "")
+                MessageBox.Show("No ha seleccionado ninguna ruta", "Seleccione una ruta", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else
+            {
+                try
+                {
+                    textBoxConsole.AppendText("Toma de fechas");
+                    textBoxConsole.AppendText(Environment.NewLine);
+                    folders = Directory.GetDirectories(path);
+                    progressBar1.Maximum = folders.Length;
+                    foreach (string f in folders)
+                    {
+                        fechas.Add(DateTime.Parse(f.Split('\\').Last()));
+                    }
+                    textBoxConsole.AppendText("La fecha inicial es: ");
+                    textBoxConsole.AppendText(fechas.Min().ToString());
+                    textBoxConsole.AppendText(Environment.NewLine);
+                    textBoxConsole.AppendText("La fecha final es: ");
+                    textBoxConsole.AppendText(fechas.Max().ToString());
+                    textBoxConsole.AppendText(Environment.NewLine);
+                    // Se asigna las fechas
+                    dateTimePickerFechaInicial.Value = fechas.Min();
+                    dateTimePickerFechaFinal.Value = fechas.Max();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+            }
+        }
+        
     }
 }
